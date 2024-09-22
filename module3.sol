@@ -1,52 +1,43 @@
-// SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.8.2 <0.9.0;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.19;
 
-contract SimpleToken {
-    string public name = "SimpleToken";
-    string public symbol = "STK";
-    uint public decimals = 18;
-    uint public totalSupply;
-    address public owner;
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-    mapping(address => uint) public balances;
-    mapping(address => uint) public allowances;
+contract MandharToken {
+    string public tokenName = "MandharThakur";
+    string public tokenAbbr = "MT";
 
-    event Transfer(address from, address to, uint value);
-    event Approval(address owner, address spender, uint value);
+    address owner;
 
-    modifier onlyOwner() {
-        require(msg.sender == owner, "You are not the owner");
-        _;
-    }
+    mapping(address => uint) record;
 
     constructor() {
         owner = msg.sender;
     }
 
-    function mint(address to, uint amount) public onlyOwner {
-        totalSupply += amount;
-        balances[to] += amount;
-        emit Transfer(address(0), to, amount);
+    function getBalance() external view returns (uint) {
+        return record[msg.sender];
     }
 
-    function burn(uint amount) public {
-        require(balances[msg.sender] >= amount, "Not enough balance");
-        balances[msg.sender] -= amount;
-        totalSupply -= amount;
-        emit Transfer(msg.sender, address(0), amount);
+    // New function to fetch balance by inputting an account address
+    function getBalanceOf(address account) external view returns (uint) {
+        return record[account];
     }
 
-    function approve(address spender, uint amount) public returns (bool) {
-        allowances[spender] = amount;
-        emit Approval(msg.sender, spender, amount);
-        return true;
+    function mint(address to, uint amount) external {
+        require(msg.sender == owner, "Only owner can mint these tokens");
+        record[to] += amount;
     }
 
-    function transfer(address to, uint amount) public returns (bool) {
-        require(balances[msg.sender] >= amount, "Not enough balance");
-        balances[msg.sender] -= amount;
-        balances[to] += amount;
-        emit Transfer(msg.sender, to, amount);
-        return true;
+    function transferTo(address to, uint amount) external {
+        require(record[msg.sender] >= amount, "Insufficient balance in the account");
+        record[to] += amount;
+        record[msg.sender] -= amount;
+    }
+
+    function burn(uint amount) external {
+        require(record[msg.sender] >= amount, "Insufficient balance in the account");
+        record[msg.sender] -= amount;
     }
 }
